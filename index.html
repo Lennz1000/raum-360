@@ -39,7 +39,7 @@ body{background:var(--ground);color:var(--ink);font-family:var(--f-ui);overflow:
   function label(div, t){ div.classList.add('dim'); div.textContent = t; }
   var spots = [[-2,-8,'Fenster 2.17 m'],[-14,149,'Tür 80 cm'],[-48,-25,'Raum 3.70 × 4.55 m']]
     .map(function(s){ return {pitch:s[0], yaw:s[1], cssClass:'dimspot', createTooltipFunc:label, createTooltipArgs:s[2]}; });
-  pannellum.viewer('pano', {type:'equirectangular', panorama:'pano.jpg', autoLoad:true, showFullscreenCtrl:true, showZoomCtrl:false,
+  pannellum.viewer('pano', {type:'equirectangular', panorama:'pano-v2.jpg', autoLoad:true, showFullscreenCtrl:true, showZoomCtrl:false,
     hfov:100, minHfov:50, maxHfov:120, yaw:-35, pitch:-4, compass:false, hotSpots:spots,
     autoRotate: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : -1.5, autoRotateInactivityDelay:6000});
 })();
