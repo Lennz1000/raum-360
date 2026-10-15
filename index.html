@@ -31,16 +31,16 @@ body{background:var(--ground);color:var(--ink);font-family:var(--f-ui);overflow:
 <div class="cap">
   <h1>Machbarkeitstest · Schlafzimmer 360°</h1>
   <div class="kv"><span><b>Raum</b>3.70 × 4.55 m</span><span><b>Fenster</b>2.17 m</span><span><b>Tür</b>80 cm</span></div>
-  <p>Wände, Fenster und Tür massgenau aus dem Grundriss. Raumhöhe angenommen, Aussicht Platzhalter. Ziehen zum Umsehen.</p>
+  <p>Wände, Fenster und Tür massgenau aus dem Grundriss. Raumhöhe angenommen, Aussicht und Einrichtung Platzhalter. Ziehen zum Umsehen.</p>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js"></script>
 <script>
 (function(){
   function label(div, t){ div.classList.add('dim'); div.textContent = t; }
-  var spots = [[-2,3,'Fenster 2.17 m'],[-10,145,'Tür 80 cm'],[-48,0,'Raum 3.70 × 4.55 m']]
+  var spots = [[-2,-8,'Fenster 2.17 m'],[-14,149,'Tür 80 cm'],[-48,-25,'Raum 3.70 × 4.55 m']]
     .map(function(s){ return {pitch:s[0], yaw:s[1], cssClass:'dimspot', createTooltipFunc:label, createTooltipArgs:s[2]}; });
   pannellum.viewer('pano', {type:'equirectangular', panorama:'pano.jpg', autoLoad:true, showFullscreenCtrl:true, showZoomCtrl:false,
-    hfov:100, minHfov:50, maxHfov:120, yaw:-25, pitch:-6, compass:false, hotSpots:spots,
+    hfov:100, minHfov:50, maxHfov:120, yaw:-35, pitch:-4, compass:false, hotSpots:spots,
     autoRotate: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : -1.5, autoRotateInactivityDelay:6000});
 })();
 </script>
