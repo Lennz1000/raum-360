@@ -62,10 +62,10 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
   // 120 was too much (Lenny 5 Nov: "you overdone it with the wide angle"): 110 on wide screens (~16 mm full-frame look, between the old
   // tight 100 and 120), 100 on portrait phones (already ~137 deg tall there).
   function wide(){ return window.innerWidth >= window.innerHeight ? 110 : 100; }
-  var WIDE = Math.round(wide()), NEAR = Math.round(WIDE * 0.62), HOP = {};
+  var WIDE = Math.round(wide()), HOP = {};
   Object.keys(SCENES).forEach(function(k){ SCENES[k].hfov = WIDE; HOP[k] = {};
     SCENES[k].hotSpots.forEach(function(h){ h.createTooltipFunc = label; h.createTooltipArgs = h.text; delete h.text; HOP[k][h.sceneId] = h; }); });
-  var v = pannellum.viewer('pano', {default:{firstScene:"eingang", autoLoad:true, sceneFadeDuration:900, compass:false, showZoomCtrl:false, minHfov:50, maxHfov:Math.max(120, WIDE)}, scenes:SCENES});
+  var v = pannellum.viewer('pano', {default:{firstScene:"eingang", autoLoad:true, sceneFadeDuration:1600, animationTimingFunction:function(t){ return 0.5 - 0.5 * Math.cos(Math.PI * t); }, compass:false, showZoomCtrl:false, minHfov:50, maxHfov:Math.max(120, WIDE)}, scenes:SCENES});
   var GUIDE = ["eingang", "korridor", "wohnen", "kueche", "terrasse", "eltern", "kinder", "buero", "bad", "dusche", "reduit"], WALK = [["eingang", 1], ["korridor", 1], ["wohnen", 1], ["kueche", 1], ["wohnen", 0], ["terrasse", 1], ["wohnen", 0], ["korridor", 0], ["eltern", 1], ["korridor", 0], ["kinder", 1], ["korridor", 0], ["buero", 1], ["korridor", 0], ["bad", 1], ["korridor", 0], ["dusche", 1], ["korridor", 0], ["reduit", 1], ["korridor", 0]], TAG = "t41v6";
   // guided tour = a walk: in each stop room the view widens, turns to the room's best view and drifts slowly; then it turns to the
   // next door, moves in towards it and crossfades into the next room facing the walking direction, where it widens again.
@@ -77,18 +77,18 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
     guideEl.textContent = running ? (small ? 'Rundgang läuft' : 'Automatischer Rundgang · zum Übernehmen tippen') : '▶ ' + (small ? 'Rundgang' : 'Automatischer Rundgang'); }
   function live(g){ return running && g === gen; }
   function dy(a, b){ return Math.abs(((b - a) % 360 + 540) % 360 - 180); }
-  function turn(p, y, h, fn){ var g = gen, ms = Math.round(900 + dy(v.getYaw(), y) * 22);      // ~22 ms per degree: calm, like turning your head
-    v.lookAt(p, y, h, ms, function(){ if (live(g)) fn(); }); }
+  // Lenny 5 Nov: "stop these whip pans", "you can't change the perspective while you're moving": the walk never zooms (one fixed
+  // angle, WIDE) and turns slowly: 85 ms per degree, at least 3.5 s (90 deg = 7.7 s, peak ~18 deg/s), soft sine ease, 1.6 s crossfades.
+  function turn(y, fn){ var g = gen, ms = Math.max(3500, Math.round(dy(v.getYaw(), y) * 85));
+    v.lookAt(-5, y, WIDE, ms, function(){ if (live(g)) fn(); }); }
   function wait(ms, fn){ var g = gen; clearTimeout(timer); timer = setTimeout(function(){ if (live(g)) fn(); }, ms); }
   function leave(){ var n = WALK[at][0], nx = WALK[(at + 1) % WALK.length][0], h = HOP[n][nx];
-    turn(-4, h.yaw, WIDE * 0.9, function(){                                                     // face the door
-      var g = gen; v.lookAt(-4, h.yaw, NEAR, 1300, function(){ if (!live(g)) return;           // move in towards it
-        at = (at + 1) % WALK.length; v.loadScene(nx, -4, h.targetYaw, NEAR); }); }); }
-  function arrive(){ var g = gen, n = WALK[at][0];
-    if (!WALK[at][1]) { v.lookAt(-4, v.getYaw(), WIDE * 0.85, 900, function(){ if (live(g)) leave(); }); return; }   // walk-through room
-    v.lookAt(-5, v.getYaw(), WIDE, 1500, function(){ if (!live(g)) return;                      // step into the room: the view opens up
-      turn(-5, SCENES[n].yaw, WIDE, function(){ v.startAutoRotate(-5, -5);                     // its best view, then a slow look around
-        wait(7000, function(){ v.stopAutoRotate(); leave(); }); }); }); }
+    turn(h.yaw, function(){ wait(600, function(){ at = (at + 1) % WALK.length; v.loadScene(nx, -5, h.targetYaw, WIDE); }); }); }
+  function arrive(){ var n = WALK[at][0];
+    if (!WALK[at][1]) { wait(800, leave); return; }                                            // walk-through room: keep walking
+    wait(1200, function(){ var hy = SCENES[n].yaw;                                             // settle, then look at the room
+      if (dy(v.getYaw(), hy) > 110) hy = v.getYaw() + (((hy - v.getYaw()) % 360 + 540) % 360 - 180 > 0 ? 70 : -70);   // never spin round
+      turn(hy, function(){ v.startAutoRotate(-3, -5); wait(6000, function(){ v.stopAutoRotate(); leave(); }); }); }); }
   function startGuide(){ running = true; gen++; clearTimeout(idle); setPill(); v.stopAutoRotate();
     var s = v.getScene(); at = -1;
     WALK.forEach(function(w, i){ if (at < 0 && w[0] === s && w[1]) at = i; });
