@@ -65,7 +65,10 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
   // wider default view (Lenny 5 Nov: "too zoomed in, you can't see the whole room")
   // 120 was too much (Lenny 5 Nov: "you overdone it with the wide angle"): 110 on wide screens (~16 mm full-frame look, between the old
   // tight 100 and 120), 100 on portrait phones (already ~137 deg tall there).
-  function wide(){ return window.innerWidth >= window.innerHeight ? 110 : 100; }
+  // 2026-11-06 Lenny: 110 "still too wide". Landscape 105 deg across; portrait screens cap the VERTICAL view at 105 deg
+  // (hfov is horizontal: 100 across on a 375x812 phone = 137 deg top to bottom, heavy stretching), i.e. ~62 deg across.
+  function wide(){ var w = window.innerWidth, h = window.innerHeight;
+    return w >= h ? 105 : Math.max(55, 2 * Math.atan(Math.tan(52.5 * Math.PI / 180) * w / h) * 180 / Math.PI); }
   var WIDE = Math.round(wide()), HOP = {};
   Object.keys(SCENES).forEach(function(k){ SCENES[k].hfov = WIDE; HOP[k] = {};
     SCENES[k].hotSpots.forEach(function(h){ h.createTooltipFunc = label; h.createTooltipArgs = h.text; delete h.text; HOP[k][h.sceneId] = h; }); });
