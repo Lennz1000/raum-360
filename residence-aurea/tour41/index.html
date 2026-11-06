@@ -18,6 +18,10 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
 .title{left:16px;top:calc(16px + env(safe-area-inset-top,0px));padding:10px 13px;display:grid;gap:3px;max-width:calc(100% - 32px)}
 .title h1{margin:0;font-family:var(--f-display);font-size:22px;font-weight:600;line-height:1.05;letter-spacing:-.005em}.title p{margin:0;font-size:12px;color:var(--muted)}
 .title img{height:26px;width:auto;display:block;margin-bottom:4px}
+.flats{display:flex;gap:2px;margin-top:6px;padding:2px;background:rgba(43,48,56,.07);border-radius:7px;width:max-content}
+.flats a{font:500 12px var(--f-ui);color:var(--ink);text-decoration:none;padding:6px 10px;border-radius:5px;white-space:nowrap;min-height:28px;display:flex;align-items:center}
+.flats a[aria-current]{background:#fff;box-shadow:0 1px 4px rgba(20,22,26,.14);font-weight:600}.flats a:not([aria-current]):hover{background:rgba(255,255,255,.6)}
+.flats a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}   /* 2026-11-06 Lenny: no flat menu first; open 4.1, switch to 3.5 right next to it */
 #room{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);font-weight:600}
 .map{left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:8px;width:min(260px,calc(100% - 32px))}
 .map .wrap{position:relative;width:100%}.map img{display:block;width:100%;height:auto}
@@ -45,7 +49,7 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
 @media (max-width:640px){.title{max-width:calc(100% - 128px)}.title h1{font-size:20px}.pill{left:auto;right:16px;transform:none;max-width:calc(100% - 210px);font-size:12px}.note{display:none}.map{width:min(170px,calc(100% - 32px))}.dot{width:20px;height:20px;margin:-10px 0 0 -10px}}
 </style></head><body>
 <div id="pano" role="img" aria-label="Virtueller 360-Grad-Rundgang durch Wohnung 4.1"></div>
-<div class="card title"><img src="../elitefox-logo.png" alt="EliteFox Immobilien" width="120" height="26"><h1>Wohnung 4.1 ·&nbsp;4½ Zimmer ·&nbsp;120&nbsp;m²</h1><p>Dachgeschoss · Süd-West · Virtueller Rundgang</p><span id="room"></span></div>
+<div class="card title"><img src="../elitefox-logo.png" alt="EliteFox Immobilien" width="120" height="26"><h1>Wohnung 4.1 ·&nbsp;4½ Zimmer ·&nbsp;120&nbsp;m²</h1><p>Dachgeschoss · Süd-West · Virtueller Rundgang</p><nav class="flats" aria-label="Wohnung wählen"><a href="../tour41/" aria-current="page">4.1 · 4½ Zimmer</a><a href="../tour35/">3.5 · 3½ Zimmer</a></nav><span id="room"></span></div>
 <div class="card map"><div class="wrap"><img src="grundriss.png?v=bf123efd" alt="Grundriss Wohnung 4.1 mit Standpunkten" width="726" height="501">
 <svg id="cone" viewBox="-32 -32 64 64" aria-hidden="true"><path d="M0 0 L-17 -29 A34 34 0 0 1 17 -29 Z" fill="rgba(194,162,86,.55)"/></svg></div></div>
 <div class="card note">Visualisierung unverbindlich. Masse aus den Plänen (Baueingabe 10.04.2026), Ausbau nach Baubeschrieb (Vorabzug), Aussicht aus Fotos vom Standort. Möblierung und Materialwahl Vorschlag.</div>
