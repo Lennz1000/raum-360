@@ -27,6 +27,7 @@ h3{font-size:15px;color:var(--mut);font-weight:600;margin:26px 0 10px;text-trans
 .tour iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .facts div{background:var(--card);border-radius:10px;padding:16px}.facts b{display:block;font-size:13px;color:var(--mut);font-weight:500;margin-bottom:4px}
+.pv{display:flex;gap:8px;margin:0 0 12px}.pv button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;cursor:pointer}.pv button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .plan{background:var(--card);border-radius:12px;padding:16px}.plan img{margin:0 auto;max-height:70vh}
 footer{padding:30px 0 50px;color:var(--mut);font-size:13px;border-top:1px solid var(--line)}
 .lb{position:fixed;inset:0;z-index:20;background:#0e0d0c;display:none;touch-action:pan-y}
@@ -54,7 +55,7 @@ footer{padding:30px 0 50px;color:var(--mut);font-size:13px;border-top:1px solid 
 <section id="rundgang"><h2>360° Rundgang</h2><p class="sub">Durch die Wohnung gehen: ziehen zum Umsehen, auf die Punkte tippen für den nächsten Raum.</p>
 <div class="tour"><iframe id="tf" title="360° Rundgang" allow="fullscreen; accelerometer; gyroscope" allowfullscreen loading="lazy"></iframe></div><a class="tfull" id="tfl" target="_blank" rel="noopener">360° Rundgang im Vollbild öffnen ›</a></section>
 <section id="bilder"><h2 id="ut"></h2><p class="sub" id="us"></p><div class="grid" id="g1"></div><button type="button" class="more" id="mb" aria-expanded="false" aria-controls="g2"></button><div class="grid" id="g2" hidden></div></section>
-<section id="grundriss"><h2>Grundriss</h2><div class="plan"><img id="gp" alt="Grundriss" loading="lazy"></div></section>
+<section id="grundriss"><h2>Grundriss</h2><div class="pv" role="group" aria-label="Plan wählen"><button type="button" data-p="s" aria-pressed="true">Vereinfacht</button><button type="button" data-p="o" aria-pressed="false">Originalplan Architekt</button></div><div class="plan"><img id="gp" alt="Grundriss" loading="lazy"></div></section>
 <section id="info"><h2>Ausbau (Auszug Baubeschrieb)</h2><div class="facts">
 <div><b>Heizen &amp; Kühlen</b>Erdsonden-Wärmepumpe, Fussbodenheizung, passive Deckenkühlung</div>
 <div><b>Energie</b>Photovoltaikanlage mit Batteriespeicher</div>
@@ -76,7 +77,7 @@ function show(u){cur=u;list=D[u];$("ut").textContent=U[u].title;$("us").textCont
  document.querySelectorAll("nav.u button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.u===u)});
  var g1=$("g1"),g2=$("g2");g1.innerHTML="";g2.innerHTML="";list.forEach(function(it,i){(it.std?g1:g2).appendChild(card(it,i))});
  var n2=list.filter(function(it){return !it.std}).length;g2.hidden=true;$("mb").setAttribute("aria-expanded","false");$("mb").textContent="Weitere Ansichten ("+n2+")";
- $("tf").src=U[u].tour;$("tfl").href=U[u].tour;$("gp").src="img/grundriss-"+u+".png";try{history.replaceState(null,"","#"+u)}catch(e){}}
+ $("tf").src=U[u].tour;$("tfl").href=U[u].tour;plan();try{history.replaceState(null,"","#"+u)}catch(e){}}
 function set(i){idx=(i+list.length)%list.length;var it=list[idx];$("li").src="img/"+it.s+"-1920.webp";$("li").alt=it.c;$("lc").textContent=(idx+1)+" / "+list.length+" · "+it.c;$("ld").href="img/"+it.s+"-2400.jpg";
  var nx=list[(idx+1)%list.length];(new Image()).src="img/"+nx.s+"-1920.webp"}
 function open(i){set(i);$("lb").classList.add("open");document.body.style.overflow="hidden";$("lx").focus()}
@@ -85,6 +86,8 @@ $("lx").onclick=close;$("lp").onclick=function(){set(idx-1)};$("ln").onclick=fun
 document.addEventListener("keydown",function(e){if(!$("lb").classList.contains("open"))return;if(e.key==="Escape")close();if(e.key==="ArrowRight")set(idx+1);if(e.key==="ArrowLeft")set(idx-1)});
 var sx=null;$("lb").addEventListener("touchstart",function(e){sx=e.touches[0].clientX},{passive:true});
 $("lb").addEventListener("touchend",function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)set(idx+(dx<0?1:-1));sx=null},{passive:true});
+var pm="s";function plan(){$("gp").src=pm==="o"?"img/grundriss-original-"+cur+".webp":"img/grundriss-"+cur+".png";$("gp").alt=pm==="o"?"Originalplan Architekt":"Grundriss vereinfacht";document.querySelectorAll(".pv button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.p===pm)})}
+document.querySelectorAll(".pv button").forEach(function(b){b.onclick=function(){pm=b.dataset.p;plan()}});
 document.querySelectorAll("nav.u button").forEach(function(b){b.onclick=function(){show(b.dataset.u)}});
 $("mb").onclick=function(){var o=$("g2").hidden;$("g2").hidden=!o;this.setAttribute("aria-expanded",o);this.textContent=(o?"Weniger Ansichten":"Weitere Ansichten ("+list.filter(function(it){return !it.std}).length+")")};
 show(location.hash==="#35"?"35":"41");
