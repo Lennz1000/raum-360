@@ -31,6 +31,8 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
 .go{background:rgba(255,255,255,.92);border:1px solid var(--line);color:var(--ink);font-family:var(--f-ui);font-size:13px;font-weight:500;padding:6px 11px 6px 26px;box-shadow:0 4px 14px rgba(20,22,26,.14);
   border-radius:16px;white-space:nowrap;cursor:pointer}
 /* 2026-11-03: no position/transform here - they override Pannellum's absolute hotspot placement (hotspots ended up in the page flow, 730 px wide) */
+/* 2026-11-07 Lenny: door taps misfired. Labels are drawn only; the page script sends a tap to the nearest door (see door()) */
+.go{pointer-events:none}#pano.hot .pnlm-ui{cursor:pointer}
 .pnlm-panorama-info{display:none!important}/* 2026-11-07 Lenny: zooming felt broken (Mac trackpad swipe direction) -> visible +/- buttons */ .pnlm-controls-container{left:auto!important;right:16px;top:calc(16px + env(safe-area-inset-top,0px))!important}
 .go::before{content:"";position:absolute;left:8px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(194,162,86,.30)}
 .note{right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:7px 10px;font-size:11px;color:var(--muted);max-width:260px}
@@ -101,11 +103,29 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
     WALK.forEach(function(w, i){ if (at < 0 && w[0] === s && w[1]) at = i; });
     if (at < 0) { at = 0; v.loadScene(WALK[0][0], -5, SCENES[WALK[0][0]].yaw, WIDE); return; }
     arrive(); }
-  function stopGuide(){ if (running){ running = false; gen++; clearTimeout(timer); setPill(); } v.stopAutoRotate(); armIdle(); }
+  function stopGuide(){ if (running){ running = false; gen++; clearTimeout(timer); setPill(); } v.stopMovement(); v.stopAutoRotate(); armIdle(); }   // stopMovement: a guided turn kept spinning ~27 deg after a tap
   function armIdle(){ clearTimeout(idle); idle = setTimeout(function(){ if (!running) v.startAutoRotate(-3, v.getPitch()); }, 20000); }   // idle drift like the reference tour
   v.on('load', function(){ if (running) { if (at >= 0 && WALK[at][0] === v.getScene()) arrive(); else startGuide(); } else armIdle(); });
   var pano = document.getElementById('pano');
   ['pointerdown', 'wheel', 'touchstart'].forEach(function(ev){ pano.addEventListener(ev, stopGuide, {capture:true, passive:true}); });
+  // 2026-11-07 Lenny: "points misfire / sometimes not clickable / bigger tolerance". Pannellum 2.5.6 jumps rooms on ANY touchend that
+  // started on a label (drags misfired), a press on a label never reached the drag surface (no pan, guided turn kept spinning) and only
+  // the label box counted. Now every press reaches Pannellum; a press that moves < 10 px and lasts < 500 ms goes to the nearest visible
+  // door within 14 px (mouse) / 24 px (touch) of its label; inside two overlapping labels the nearer centre wins.
+  var tap = null;
+  function door(e){ var best = null, bd = 1e9, pad = e.pointerType === 'mouse' ? 14 : 24, x = e.clientX, y = e.clientY;
+    (v.getConfig().hotSpots || []).forEach(function(h){ if (!h.div || h.div.style.visibility !== 'visible') return;
+      var r = h.div.getBoundingClientRect(), d = Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
+      if (d > pad) return;
+      d += Math.hypot(x - (r.left + r.right) / 2, y - (r.top + r.bottom) / 2) / 1000;
+      if (d < bd) { bd = d; best = h; } });
+    return best; }
+  pano.addEventListener('pointerdown', function(e){ clearTimeout(idle); pano.classList.remove('hot');   // no idle drift while a finger is down
+    tap = e.isPrimary && e.target.classList.contains('pnlm-dragfix') ? {x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId, h: door(e)} : null; }, true);
+  window.addEventListener('pointerup', function(e){ var t = tap; tap = null; if (!running) armIdle();
+    if (t && t.h && e.pointerId === t.id && Date.now() - t.t < 500 && Math.hypot(e.clientX - t.x, e.clientY - t.y) < 10) v.loadScene(t.h.sceneId, t.h.targetPitch, t.h.targetYaw, t.h.targetHfov); }, true);
+  window.addEventListener('pointercancel', function(){ tap = null; }, true);
+  pano.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && !e.buttons) pano.classList.toggle('hot', !!door(e)); });
   document.addEventListener('keydown', function(e){ if (e.target !== guideEl) stopGuide(); });
   guideEl.addEventListener('click', function(){ if (running) stopGuide(); else startGuide(); });
   setPill(); if (!reduce) { running = true; gen++; at = 0; setPill(); }
@@ -119,9 +139,14 @@ html,body{height:100%;margin:0}body{background:var(--ground);color:var(--ink);fo
   var wrap = document.querySelector('.map .wrap'), cone = document.getElementById('cone'), roomEl = document.getElementById('room'), dots = {};
   Object.keys(NODES).forEach(function(k){
     var b = document.createElement('button'); b.className = 'dot'; b.type = 'button'; b.title = SCENES[k].title; b.setAttribute('aria-label', SCENES[k].title);
-    b.style.left = NODES[k][0] + '%'; b.style.top = NODES[k][1] + '%'; b.addEventListener('click', function(){ stopGuide(); v.loadScene(k); });
+    b.style.left = NODES[k][0] + '%'; b.style.top = NODES[k][1] + '%'; b.dataset.k = k;
     wrap.appendChild(b); dots[k] = b;
   });
+  // 2026-11-07 Lenny: map dots hard to hit, close ones (Dusche / Reduit, 15-22 px apart) misfired: a click anywhere on the map card goes
+  // to the nearest dot within 24 px; a keyboard click (detail 0) goes to the focused dot
+  document.querySelector('.map').addEventListener('click', function(e){ var k = !e.detail ? e.target.dataset.k : null, bd = 24;
+    if (e.detail) Object.keys(dots).forEach(function(j){ var r = dots[j].getBoundingClientRect(), d = Math.hypot(e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2); if (d < bd) { bd = d; k = j; } });
+    if (k) { stopGuide(); v.loadScene(k); } });
   function sync(){
     var s = v.getScene(); if (!s || !NODES[s]) return requestAnimationFrame(sync);
     Object.keys(dots).forEach(function(k){ dots[k].classList.toggle('on', k === s); if (thumbs[k]) thumbs[k].classList.toggle('on', k === s); });
