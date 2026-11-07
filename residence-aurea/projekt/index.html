@@ -39,6 +39,11 @@ footer{padding:30px 0 50px;color:var(--mut);font-size:13px;border-top:1px solid 
 @media (max-width:640px){nav.u a{display:none}nav.u .wrap{overflow:visible}}
 @media (max-width:640px){.lb .p,.lb .n{top:auto;bottom:9px;width:40px;height:40px}.lb figcaption{padding:0 60px;font-size:14px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+/* Lenny 2026-11-07 phone: the full wide hero shot (smaller, title below) and a portrait 360 frame */
+@media (max-width:640px){.hero{height:auto;min-height:0;background:none}.hero .bg{height:auto;aspect-ratio:3/2}
+.hero .t{position:static;background:none;color:var(--ink);padding:14px 0 2px}.hero h1{font-size:30px}.hero p{opacity:1;color:var(--mut)}
+.tour{aspect-ratio:auto;height:min(78vh,720px);max-height:none}}
+.tfull{display:inline-block;margin-top:12px;font-size:15px;color:var(--ac)}
 </style></head><body>
 <header class="hero"><img class="bg" src="img/aurea-3-5-31-aussicht-berge-1920.webp" srcset="img/aurea-3-5-31-aussicht-berge-960.webp 960w, img/aurea-3-5-31-aussicht-berge-1920.webp 1920w" sizes="100vw" alt="Wohnzimmer Wohnung 3.5 mit Blick auf die Berge">
 <img class="logo" src="img/elitefox-logo.png" alt="EliteFox" onerror="this.remove()">
@@ -47,7 +52,7 @@ footer{padding:30px 0 50px;color:var(--mut);font-size:13px;border-top:1px solid 
 <a href="#rundgang">360° Rundgang</a><a href="#grundriss" style="margin-left:14px">Grundriss</a></div></nav>
 <main class="wrap">
 <section id="rundgang"><h2>360° Rundgang</h2><p class="sub">Durch die Wohnung gehen: ziehen zum Umsehen, auf die Punkte tippen für den nächsten Raum.</p>
-<div class="tour"><iframe id="tf" title="360° Rundgang" allow="fullscreen; accelerometer; gyroscope" allowfullscreen loading="lazy"></iframe></div></section>
+<div class="tour"><iframe id="tf" title="360° Rundgang" allow="fullscreen; accelerometer; gyroscope" allowfullscreen loading="lazy"></iframe></div><a class="tfull" id="tfl" target="_blank" rel="noopener">360° Rundgang im Vollbild öffnen ›</a></section>
 <section id="bilder"><h2 id="ut"></h2><p class="sub" id="us"></p><div class="grid" id="g1"></div><button type="button" class="more" id="mb" aria-expanded="false" aria-controls="g2"></button><div class="grid" id="g2" hidden></div></section>
 <section id="grundriss"><h2>Grundriss</h2><div class="plan"><img id="gp" alt="Grundriss" loading="lazy"></div></section>
 <section id="info"><h2>Ausbau (Auszug Baubeschrieb)</h2><div class="facts">
@@ -71,7 +76,7 @@ function show(u){cur=u;list=D[u];$("ut").textContent=U[u].title;$("us").textCont
  document.querySelectorAll("nav.u button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.u===u)});
  var g1=$("g1"),g2=$("g2");g1.innerHTML="";g2.innerHTML="";list.forEach(function(it,i){(it.std?g1:g2).appendChild(card(it,i))});
  var n2=list.filter(function(it){return !it.std}).length;g2.hidden=true;$("mb").setAttribute("aria-expanded","false");$("mb").textContent="Weitere Ansichten ("+n2+")";
- $("tf").src=U[u].tour;$("gp").src="img/grundriss-"+u+".png";try{history.replaceState(null,"","#"+u)}catch(e){}}
+ $("tf").src=U[u].tour;$("tfl").href=U[u].tour;$("gp").src="img/grundriss-"+u+".png";try{history.replaceState(null,"","#"+u)}catch(e){}}
 function set(i){idx=(i+list.length)%list.length;var it=list[idx];$("li").src="img/"+it.s+"-1920.webp";$("li").alt=it.c;$("lc").textContent=(idx+1)+" / "+list.length+" · "+it.c;$("ld").href="img/"+it.s+"-2400.jpg";
  var nx=list[(idx+1)%list.length];(new Image()).src="img/"+nx.s+"-1920.webp"}
 function open(i){set(i);$("lb").classList.add("open");document.body.style.overflow="hidden";$("lx").focus()}
