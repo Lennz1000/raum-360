@@ -87,7 +87,7 @@ var sx=null;$("lb").addEventListener("touchstart",function(e){sx=e.touches[0].cl
 $("lb").addEventListener("touchend",function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)set(idx+(dx<0?1:-1));sx=null},{passive:true});
 function plan(){$("gp").src="img/grundriss-original-"+cur+".webp?v=r1108d";$("gp").alt="Grundriss (Plan Architekt)"}   /* 2026-11-08 Lenny: no switch, architect plan only */
 
-document.querySelectorAll("nav.u button").forEach(function(b){b.onclick=function(){if(b.dataset.u===cur)return;var m=document.querySelector("main");var rm=matchMedia("(prefers-reduced-motion:reduce)").matches;m.style.transition=rm?"":"opacity .22s ease";m.style.opacity="0";setTimeout(function(){show(b.dataset.u);window.scrollTo({top:0,behavior:rm?"auto":"smooth"});m.style.opacity="1"},rm?0:220)}});   /* 2026-11-08 Lenny: switching flats starts at the top, simple fade */
+document.querySelectorAll("nav.u button").forEach(function(b){b.onclick=function(){if(b.dataset.u===cur)return;show(b.dataset.u);window.scrollTo(0,0);var m=document.querySelector("main");if(m.animate&&!matchMedia("(prefers-reduced-motion:reduce)").matches)m.animate([{opacity:0},{opacity:1}],{duration:260,easing:"ease-out"})}});   /* 2026-11-08 Lenny: switching flats starts at the top, simple fade */
 $("mb").onclick=function(){var o=$("g2").hidden;$("g2").hidden=!o;this.setAttribute("aria-expanded",o);this.textContent=(o?"Weniger Ansichten":"Weitere Ansichten ("+list.filter(function(it){return !it.std}).length+")")};
 show(location.hash==="#35"?"35":"41");
 </script></body></html>
