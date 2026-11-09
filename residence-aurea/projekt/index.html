@@ -76,7 +76,7 @@ function show(u){cur=u;list=D[u];$("ut").textContent=U[u].title;$("us").textCont
  document.querySelectorAll("nav.u button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.u===u)});
  var g1=$("g1"),g2=$("g2");g1.innerHTML="";g2.innerHTML="";list.forEach(function(it,i){(it.std?g1:g2).appendChild(card(it,i))});
  var n2=list.filter(function(it){return !it.std}).length;g2.hidden=true;$("mb").setAttribute("aria-expanded","false");$("mb").textContent="Weitere Ansichten ("+n2+")";
- $("tf").src=U[u].tour;$("tfl").href=U[u].tour+"?from=projekt";plan();try{history.replaceState(null,"","#"+u)}catch(e){}}
+ var T=(location.protocol=="file:"?"https://projekte.martistudios.ch/residence-aurea/":"")+U[u].tour;$("tf").src=T;$("tfl").href=T+"?from=projekt";plan();try{history.replaceState(null,"","#"+u)}catch(e){}}
 function set(i){idx=(i+list.length)%list.length;var it=list[idx];$("li").src="img/"+it.s+"-1920.webp";$("li").alt=it.c;$("lc").textContent=(idx+1)+" / "+list.length+" · "+it.c;$("ld").href="img/"+it.s+"-2400.jpg";
  var nx=list[(idx+1)%list.length];(new Image()).src="img/"+nx.s+"-1920.webp"}
 function open(i){set(i);$("lb").classList.add("open");document.body.style.overflow="hidden";$("lx").focus()}
